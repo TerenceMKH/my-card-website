@@ -21,8 +21,8 @@ export default async function PromoArticle(props: { params: Promise<{ id: string
   // 2. The Magic Step: Find the related credit cards!
   // We take the comma-separated IDs (e.g., "hsbc-everymile, scb-smart") and turn them into an array
   const relatedCardIds = post.Related_Cards
-    ? post.Related_Cards.split(',').map((id) => id.trim())
-    : [];
+  ? post.Related_Cards.split(',').map((id: string) => id.trim())
+  : [];
 
   const allCards = await getSheetData('Credit_Cards');
   const relatedCards = allCards.filter((card) => relatedCardIds.includes(card.Card_ID));
