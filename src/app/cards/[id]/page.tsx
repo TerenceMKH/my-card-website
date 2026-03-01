@@ -148,7 +148,7 @@ export default async function CardDetail(props: { params: Promise<{ id: string }
               <div className="bg-green-50 p-6 md:p-8 rounded-3xl border border-green-100 h-full flex flex-col">
                 <h3 className="text-green-800 font-extrabold mb-5 flex items-center gap-2 text-xl"><span>✅ 優點 Pros</span></h3>
                 <ul className="space-y-4 mb-5 flex-grow">
-                  {prosList.map((pro, i) => <li key={i} className="text-sm md:text-base text-green-900 flex gap-3 font-medium"><span className="text-green-600">✓</span> <span>{pro}</span></li>)}
+                  {prosList.map((pro: string, i: number) => <li key={i} className="text-sm md:text-base text-green-900 flex gap-3 font-medium"><span className="text-green-600">✓</span> <span>{pro}</span></li>)}
                 </ul>
                 {card.Pros_Remarks && (
                   <div className="bg-green-100 p-4 rounded-xl text-sm text-green-800 font-bold">
@@ -159,7 +159,7 @@ export default async function CardDetail(props: { params: Promise<{ id: string }
               <div className="bg-red-50 p-6 md:p-8 rounded-3xl border border-red-100 h-full flex flex-col">
                 <h3 className="text-red-800 font-extrabold mb-5 flex items-center gap-2 text-xl"><span>❌ 缺點 Cons</span></h3>
                 <ul className="space-y-4 mb-5 flex-grow">
-                  {consList.map((con, i) => <li key={i} className="text-sm md:text-base text-red-900 flex gap-3 font-medium"><span className="text-red-500">✕</span> <span>{con}</span></li>)}
+                  {consList.map((con: string, i: number) => <li key={i} className="text-sm md:text-base text-red-900 flex gap-3 font-medium"><span className="text-red-500">✕</span> <span>{con}</span></li>)}
                 </ul>
                 {card.Cons_Remarks && (
                   <div className="bg-red-100 p-4 rounded-xl text-sm text-red-800 font-bold">
