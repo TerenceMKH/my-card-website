@@ -1,4 +1,8 @@
 import { getSheetData } from '@/lib/google-sheets';
+import Image from 'next/image';
+
+// ⚡️ Add this line: Revalidate the cache every 60 seconds (1 min)
+export const revalidate = 60; 
 
 export default async function FAQPage() {
   // 1. Fetch FAQ data from the Google Sheet

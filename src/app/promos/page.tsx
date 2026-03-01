@@ -1,6 +1,9 @@
 import { getSheetData } from '@/lib/google-sheets';
 import Link from 'next/link';
 
+// ⚡️ Add this line: Revalidate the cache every 60 seconds (1 min)
+export const revalidate = 60; 
+
 export default async function PromosIndex() {
   // 1. Fetch the blog data
   const allPromos = await getSheetData('Blog_Promos');

@@ -1,5 +1,9 @@
 import { getSheetData } from '@/lib/google-sheets';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
+
+// ⚡️ Add this line: Revalidate the cache every 60 seconds (1 min)
+export const revalidate = 60; 
 
 // These are the standard columns we DON'T want to show in the "Features" list
 const STANDARD_COLUMNS = [
@@ -7,6 +11,34 @@ const STANDARD_COLUMNS = [
   'Card_Network', 'Card_Tier', 'Categories_Tags', 'Short_Summary', 
   'Card_Image_URL', 'Apply_Link'
 ];
+
+import { Metadata } from 'next';
+
+// ⚡️ This tells Next.js to build the WhatsApp/SEO preview dynamically
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const params = await props.params;
+  const allCards = await getSheetData('Credit_Cards');
+  const card = allCards.find((c) => c.Card_ID === params.id);
+
+  if (!card) return { title: 'Card Not Found' };
+
+  return {
+    title: `${card.Card_Name} Review | HK Card Hub`,
+    description: card.Short_Summary,
+    openGraph: {
+      title: `${card.Card_Name} - Top Credit Card`,
+      description: card.Short_Summary,
+      images: [
+        {
+          url: card.Card_Image_URL || 'https://via.placeholder.com/1200x630?text=HK+Card+Hub',
+          width: 1200,
+          height: 630,
+          alt: card.Card_Name,
+        },
+      ],
+    },
+  };
+}
 
 export default async function CardDetail(props: { params: Promise<{ id: string }> }) {
   // 1. Get the ID from the URL (e.g., "hsbc-everymile")

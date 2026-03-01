@@ -1,6 +1,10 @@
 import { getSheetData } from '@/lib/google-sheets';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
+
+// ⚡️ Add this line: Revalidate the cache every 60 seconds (1 min)
+export const revalidate = 60; 
 
 export default async function PromoArticle(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
