@@ -1,114 +1,102 @@
 import { getSheetData } from '@/lib/google-sheets';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
+import Link from 'next/link';
 
-// ⚡️ Add this line: Revalidate the cache every 60 seconds (1 min)
-export const revalidate = 60; 
+export const revalidate = 60;
 
 export default async function CategoryPage(props: { params: Promise<{ id: string }> }) {
-  // 1. Get the category ID from the URL (e.g., "dining")
   const params = await props.params;
   const categoryId = params.id.toLowerCase();
 
-  // 2. Fetch the Category details (Title, Summary, Hero Image)
+  // 1. 獲取分類資訊 (Title, Summary)
   const categoriesData = await getSheetData('Categories');
   const categoryMeta = categoriesData.find((c) => c.Category_ID?.toLowerCase() === categoryId);
 
-  // If the category doesn't exist in the sheet, show 404
   if (!categoryMeta) {
     notFound();
   }
 
-  // 3. Fetch ALL cards and filter them by this category
+  // 2. 獲取所有信用卡，並透過 Categories_Tags 篩選
   const allCards = await getSheetData('Credit_Cards');
   const categoryCards = allCards
     .filter((card) => card.Display?.toLowerCase() === 'true')
     .filter((card) => {
-      // Look at the "Categories_Tags" column, split by commas, and check for a match
+      // 讀取 Categories_Tags 欄位，例如 "cashback, no-annual-fee"，並透過逗號拆分比對
       const tags = card.Categories_Tags?.toLowerCase().split(',').map(tag => tag.trim()) || [];
       return tags.includes(categoryId);
     })
-    .sort((a, b) => {
-      const sortA = parseInt(a.Manual_Sort) || 0;
-      const sortB = parseInt(b.Manual_Sort) || 0;
-      return sortB - sortA; 
-    });
+    .sort((a, b) => (parseInt(b.Manual_Sort) || 0) - (parseInt(a.Manual_Sort) || 0));
 
   return (
-    <main className="min-h-screen bg-gray-50 font-sans pb-12">
-      {/* Navigation Bar Placeholder (We can build a real one later) */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <a href="/" className="text-blue-600 hover:underline font-bold text-lg">
-            HK Card Hub
-          </a>
-        </div>
-      </div>
-
-      {/* Category Hero Section */}
-      <div className="bg-blue-900 text-white relative overflow-hidden">
-        {/* Optional background image overlay */}
-        {categoryMeta.Hero_Image_URL && (
-          <div 
-            className="absolute inset-0 opacity-20 bg-cover bg-center"
-            style={{ backgroundImage: `url(${categoryMeta.Hero_Image_URL})` }}
-          />
-        )}
-        <div className="max-w-5xl mx-auto px-6 py-16 relative z-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
+    <main className="min-h-screen bg-gray-50 font-sans pb-16">
+      
+      {/* 分類頁面標題區塊 */}
+      <div className="bg-[#0f172a] text-white relative overflow-hidden">
+        <div className="max-w-5xl mx-auto px-6 py-16 relative z-10 text-center md:text-left">
+          <Link href="/" className="text-blue-400 hover:text-blue-300 text-sm font-medium mb-4 inline-block">
+            &larr; 返回首頁
+          </Link>
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">
             {categoryMeta.Page_Title}
           </h1>
-          <p className="text-xl max-w-2xl mx-auto text-blue-100">
+          <p className="text-lg md:text-xl max-w-2xl text-slate-300 leading-relaxed">
             {categoryMeta.Page_Summary}
           </p>
         </div>
       </div>
 
-      {/* Filtered Cards Grid */}
+      {/* 篩選後的信用卡列表 */}
       <div className="max-w-5xl mx-auto px-6 mt-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Showing {categoryCards.length} {categoryCards.length === 1 ? 'card' : 'cards'}
-        </h2>
+        <div className="mb-8 border-b border-gray-200 pb-4">
+          <h2 className="text-xl font-bold text-gray-800">
+            我們找到 <span className="text-blue-600">{categoryCards.length}</span> 張適合你的信用卡
+          </h2>
+        </div>
 
         {categoryCards.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-6">
             {categoryCards.map((card) => (
-              <div key={card.Card_ID} className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col">
+              <div key={card.Card_ID} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row hover:shadow-md transition-shadow p-6 gap-6">
                 
-                {/* Card Header & Image */}
-                <div className="p-6 border-b border-gray-100 flex items-center gap-4">
-                  <div className="w-24 h-16 relative flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
-                    <img 
-                      src={card.Card_Image_URL || 'https://via.placeholder.com/300x190?text=Card'} 
-                      alt={card.Card_Name}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 leading-tight">{card.Card_Name}</h3>
-                    <p className="text-xs text-gray-500 font-medium uppercase mt-1">{card.Bank}</p>
+                {/* 左側：卡片圖片 */}
+                <div className="w-full md:w-48 flex-shrink-0 flex flex-col items-center justify-center">
+                  <img 
+                    src={card.Image_URL || 'https://via.placeholder.com/300x190'} 
+                    alt={card.Card_Name_TC}
+                    className="w-full max-w-[200px] rounded-xl shadow-sm border border-gray-100 mb-3"
+                  />
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-3 py-1 rounded-full">
+                    {card.Bank_Name}
                   </div>
                 </div>
 
-                {/* Card Summary */}
-                <div className="p-6 flex-grow">
-                  <p className="text-gray-600 text-sm mb-4">{card.Short_Summary}</p>
-                  {/* Highlighted Feature */}
-                  {card['Welcome Offer'] && (
-                    <div className="bg-green-50 text-green-800 p-3 rounded-md text-sm font-semibold border border-green-100">
-                      🎁 {card['Welcome Offer']}
+                {/* 中間：卡片資訊與迎新 */}
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{card.Card_Name_TC}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{card.Summary_Review}</p>
+                  
+                  {card.Welcome_Offer_Main && (
+                    <div className="bg-orange-50 text-orange-800 p-3 rounded-xl text-sm font-medium border border-orange-100 mb-4 inline-block w-full">
+                      <span className="font-bold mr-2">🎁 迎新優惠:</span> 
+                      {card.Welcome_Offer_Main}
                     </div>
                   )}
+
+                  <div className="flex gap-4 text-sm bg-gray-50 p-3 rounded-xl border border-gray-100 w-fit">
+                    <div><span className="text-gray-500 mr-2">本地簽賬:</span><span className="font-bold text-gray-900">{card.Rate_Local || '--'}</span></div>
+                    <div className="w-px bg-gray-300"></div>
+                    <div><span className="text-gray-500 mr-2">外幣簽賬:</span><span className="font-bold text-gray-900">{card.Rate_Foreign || '--'}</span></div>
+                  </div>
                 </div>
 
-                {/* Card Footer */}
-                <div className="p-6 pt-0 mt-auto flex gap-3">
-                  <a href={`/cards/${card.Card_ID}`} className="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
-                    Details
-                  </a>
+                {/* 右側：行動按鈕 */}
+                <div className="w-full md:w-48 flex-shrink-0 flex flex-col justify-center gap-3 border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-6">
+                  <Link href={`/cards/${card.Card_ID}`} className="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl transition-colors text-sm">
+                    詳細評價
+                  </Link>
                   {card.Apply_Link && (
-                    <a href={card.Apply_Link} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
-                      Apply Now
+                    <a href={card.Apply_Link} target="_blank" rel="noopener noreferrer" className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition-colors text-sm">
+                      立即申請
                     </a>
                   )}
                 </div>
@@ -117,8 +105,10 @@ export default async function CategoryPage(props: { params: Promise<{ id: string
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
-            <p className="text-gray-500 text-lg">No active cards found for this category yet.</p>
+          <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300">
+            <div className="text-4xl mb-4">🔍</div>
+            <p className="text-gray-500 text-lg font-medium">此分類暫時未有相關的信用卡推介。</p>
+            <p className="text-gray-400 text-sm mt-2">請嘗試瀏覽其他分類或稍後再回來查看。</p>
           </div>
         )}
       </div>
