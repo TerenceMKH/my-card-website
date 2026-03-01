@@ -3,14 +3,11 @@ import { google } from 'googleapis';
 export async function getSheetData(range: string) {
   try {
     // 1. Authenticate using the environment variables
-    const target = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
-    const jwt = new google.auth.JWT(
-      process.env.GOOGLE_CLIENT_EMAIL,
-      undefined,
-      // We must replace escaped newline characters for the key to work properly
-      (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-      target
-    );
+const jwt = new google.auth.JWT({
+   email: process.env.GOOGLE_CLIENT_EMAIL,
+   key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+   scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+ });
 
     const sheets = google.sheets({ version: 'v4', auth: jwt });
 
