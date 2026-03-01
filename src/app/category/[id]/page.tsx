@@ -22,7 +22,7 @@ export default async function CategoryPage(props: { params: Promise<{ id: string
     .filter((card) => card.Display?.toLowerCase() === 'true')
     .filter((card) => {
       // 讀取 Categories_Tags 欄位，例如 "cashback, no-annual-fee"，並透過逗號拆分比對
-      const tags = card.Categories_Tags?.toLowerCase().split(',').map(tag => tag.trim()) || [];
+      const tags = card.Categories_Tags?.toLowerCase().split(',').map((tag: string) => tag.trim()) || [];
       return tags.includes(categoryId);
     })
     .sort((a, b) => (parseInt(b.Manual_Sort) || 0) - (parseInt(a.Manual_Sort) || 0));
